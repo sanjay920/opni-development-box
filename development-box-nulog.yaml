@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-service
+  namespace: opni-demo
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: gpu-service
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2021-06-23T19:43:27-07:00"
+      creationTimestamp: null
+      labels:
+        app: gpu-service
+    spec:
+      containers:
+      - name: gpu-service-controller
+        env:
+        - name: NATS_SERVER_URL
+          value: nats://nats_client:password@nats-client.opni-demo.svc:4222
+        - name: MINIO_SERVER_URL
+          value: http://minio.opni-demo.svc.cluster.local:9000
+        - name: MINIO_ACCESS_KEY
+          value: minioadmin
+        - name: MINIO_SECRET_KEY
+          value: minioadmin
+        - name: JOB_NAMESPACE
+          value: default
+        - name: ES_ENDPOINT
+          value: https://opendistro-es-client-service.opni-demo.svc.cluster.local:9200
+        - name: ES_USERNAME
+          value: admin
+        - name: ES_PASSWORD
+          value: admin
+        - name: NODE_TLS_REJECT_UNAUTHORIZED
+          value: "0"
+        image: tybalex/gpuservice-controller:dev
+        imagePullPolicy: Always
+        resources: {}
+      - name: gpu-service-worker
+        env:
+        - name: NATS_SERVER_URL
+          value: nats://nats_client:password@nats-client.opni-demo.svc:4222
+        - name: ES_ENDPOINT
+          value: https://opendistro-es-client-service.opni-demo.svc.cluster.local:9200
+        - name: MINIO_ENDPOINT
+          value: http://minio.opni-demo.svc.cluster.local:9000
+        - name: MINIO_ACCESS_KEY
+          value: minioadmin
+        - name: MINIO_SECRET_KEY
+          value: minioadmin
+        - name: MODEL_THRESHOLD
+          value: "0.5"
+        - name: IS_GPU_SERVICE
+          value: "True"
+        - name: MIN_LOG_TOKENS
+          value: "5"
+        image: sanjayrancher/development-box-nulog:v0.0
+        imagePullPolicy: Always
+        resources:
+          limits:
+            nvidia.com/gpu: 1
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+
+
+
+
+
+
+
+
+
