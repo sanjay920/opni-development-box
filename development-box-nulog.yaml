@@ -61,6 +61,7 @@ spec:
         - name: MIN_LOG_TOKENS
           value: "5"
         image: sanjayrancher/development-box-nulog:v0.0
+        command: [ "/bin/bash", "-c", "--" ]
         imagePullPolicy: Always
         resources:
           limits:
