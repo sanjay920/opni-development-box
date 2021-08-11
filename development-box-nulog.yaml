@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gpu-service
+  namespace: opni-demo
+spec:
+  containers:
+  - name: gpu-service-controller
+    env:
+    - name: NATS_SERVER_URL
+      value: nats://nats_client:password@nats-client.opni-demo.svc:4222
+    - name: MINIO_SERVER_URL
+      value: http://minio.opni-demo.svc.cluster.local:9000
+    - name: MINIO_ACCESS_KEY
+      value: minioadmin
+    - name: MINIO_SECRET_KEY
+      value: minioadmin
+    - name: JOB_NAMESPACE
+      value: default
+    - name: ES_ENDPOINT
+      value: https://opendistro-es-client-service.opni-demo.svc.cluster.local:9200
+    - name: ES_USERNAME
+      value: admin
+    - name: ES_PASSWORD
+      value: admin
+    - name: NODE_TLS_REJECT_UNAUTHORIZED
+      value: "0"
+    image: tybalex/gpuservice-controller:dev
+    imagePullPolicy: Always
+    resources: {}
+  - name: gpu-service-worker
+    env:
+    - name: NATS_SERVER_URL
+      value: nats://nats_client:password@nats-client.opni-demo.svc:4222
+    - name: ES_ENDPOINT
+      value: https://opendistro-es-client-service.opni-demo.svc.cluster.local:9200
+    - name: MINIO_ENDPOINT
+      value: http://minio.opni-demo.svc.cluster.local:9000
+    - name: MINIO_ACCESS_KEY
+      value: minioadmin
+    - name: MINIO_SECRET_KEY
+      value: minioadmin
+    - name: MODEL_THRESHOLD
+      value: "0.5"
+    - name: IS_GPU_SERVICE
+      value: "True"
+    - name: MIN_LOG_TOKENS
+      value: "5"
+    image: sanjayrancher/development-box-nulog:v0.0
+    command: [ "/bin/bash", "-c", "--" ]
+    args: [ "while true; do sleep 30; done;" ]
+    imagePullPolicy: Always
+    resources:
+      limits:
+        nvidia.com/gpu: 1
+
